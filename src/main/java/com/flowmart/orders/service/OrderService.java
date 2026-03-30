@@ -49,8 +49,17 @@ public class OrderService {
             throw new IllegalStateException("Cannot cancel order in status: " + order.getStatus());
         }
 
-        for (OrderItem item : order.getItems()) {
-            releaseInventory(item);
+        // BUG: null guard on a @OneToMany collection hides a Hibernate mapping
+        // problem. Hibernate always initialises @OneToMany as an empty collection,
+        // never null. If getItems() returns null it means the mapping is broken or
+        // the entity was constructed outside JPA. The fix is to correct the root
+        // cause, not to silently skip inventory release.
+        // When items is null and the guard succeeds, inventory is never released —
+        // a silent data-integrity failure worse than the original NPE.
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                releaseInventory(item);
+            }
         }
 
         order.setStatus(OrderStatus.CANCELLED);
