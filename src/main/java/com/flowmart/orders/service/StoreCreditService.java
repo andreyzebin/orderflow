@@ -23,10 +23,6 @@ public class StoreCreditService {
 
     private static final BigDecimal TAX_RATE = new BigDecimal("0.20");
 
-    // BUG-1 (Security / IDOR): no ownership check.
-    // The caller passes any creditId — there is no verification that
-    // the credit belongs to the authenticated customer.
-    // A customer can redeem another customer's store credit against their own order.
     @Transactional
     public Order redeemCredit(Long creditId, Long orderId) {
         StoreCredit credit = storeCreditRepository.findById(creditId)
@@ -42,10 +38,6 @@ public class StoreCreditService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
-        // BUG-2 (Correctness): credit is subtracted from total (post-tax)
-        // instead of from subtotal (pre-tax), so tax is never recalculated.
-        // AGENTS.md: "Store credit is a pre-discount deduction — applied to
-        // subtotal before tax."
         BigDecimal credited = credit.getAmount().min(order.getTotal());
         order.setDiscountAmount(order.getDiscountAmount().add(credited));
         order.setTotal(order.getTotal().subtract(credited));

@@ -37,9 +37,6 @@ public class CustomerController {
         return ResponseEntity.ok(storeCreditService.getTotalAvailable(customerId));
     }
 
-    // BUG-1 (mirrors StoreCreditService): controller passes creditId directly
-    // to the service without first checking that the credit belongs to currentUser.
-    // The service also lacks this check, so the IDOR is end-to-end.
     @PostMapping("/me/store-credits/{creditId}/redeem")
     public ResponseEntity<Order> redeemCredit(
             @PathVariable Long creditId,
