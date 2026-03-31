@@ -29,10 +29,6 @@ public class PromotionController {
         return ResponseEntity.ok(promotionRepository.findAllActive(LocalDate.now()));
     }
 
-    // BUG-2: IDOR — no ownership check before applying the promotion.
-    // Any authenticated customer can apply a promotion to any other customer's order.
-    // Compare with OrderController where every mutating endpoint verifies:
-    //   order.getCustomer().getEmail().equals(currentUser.getUsername())
     @PostMapping("/orders/{orderId}/promotions/{promotionId}/apply")
     public ResponseEntity<Order> applyPromotion(
             @PathVariable Long orderId,

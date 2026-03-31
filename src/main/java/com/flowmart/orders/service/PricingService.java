@@ -56,9 +56,6 @@ public class PricingService {
         return orderRepository.save(order);
     }
 
-    // BUG-3: missing @Transactional — two writes without atomicity.
-    // If orderRepository.save() throws after orderItemRepository.saveAll()
-    // succeeds, items will be discounted but the order total unchanged.
     public Order applyBulkDiscount(Order order, Promotion promotion) {
         List<OrderItem> eligible = findEligibleItems(order, promotion);
         if (eligible.isEmpty()) {
@@ -82,8 +79,6 @@ public class PricingService {
         return orderRepository.save(order);
     }
 
-    // BUG-4: N+1 — one SQL query per category instead of a single IN query.
-    // Should use promotionRepository.findActiveByCategoryIn(categories, today).
     public List<Promotion> findApplicablePromotions(Order order) {
         Set<String> categories = order.getItems().stream()
                 .map(item -> item.getProduct().getCategory())
@@ -100,9 +95,6 @@ public class PricingService {
 
     // ── private helpers ─────────────────────────────────────────────────
 
-    // BUG-1: returns the first item in the group, not the cheapest.
-    // Business rule (AGENTS.md + ticket AC): free item must be the one
-    // with the lowest unitPrice in the qualifying group.
     private OrderItem selectFreeItem(List<OrderItem> group) {
         return group.get(0);
     }

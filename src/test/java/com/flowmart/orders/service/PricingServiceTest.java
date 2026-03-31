@@ -55,8 +55,6 @@ class PricingServiceTest {
 
     @Test
     void applyBulkDiscount_withFourItems_firstItemBecomeFree() {
-        // All items have the same price — this test passes whether first or
-        // cheapest is selected, so it does NOT catch the selectFreeItem bug.
         OrderItem item1 = buildItem(1L, new BigDecimal("10.00"));
         OrderItem item2 = buildItem(2L, new BigDecimal("10.00"));
         OrderItem item3 = buildItem(3L, new BigDecimal("10.00"));
@@ -85,11 +83,6 @@ class PricingServiceTest {
 
         assertThat(result.getDiscountAmount()).isEqualByComparingTo("0.00");
     }
-
-    // MISSING TEST: applyBulkDiscount_withMixedPrices_cheapestItemBecomeFree
-    // A qualifying group where items have different prices should prove that
-    // the item with the lowest unitPrice receives the discount — not the first.
-    // Without this test, BUG-1 in selectFreeItem() is invisible.
 
     private OrderItem buildItem(Long id, BigDecimal price) {
         return OrderItem.builder()

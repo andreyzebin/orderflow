@@ -3,8 +3,6 @@ package com.flowmart.orders.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
-// BUG-5 (style): missing Lombok annotations — every other entity uses
-// @Data @Builder @NoArgsConstructor @AllArgsConstructor
 @Entity
 @Table(name = "promotions")
 public class Promotion {
