@@ -49,8 +49,10 @@ public class OrderService {
             throw new IllegalStateException("Cannot cancel order in status: " + order.getStatus());
         }
 
-        for (OrderItem item : order.getItems()) {
-            releaseInventory(item);
+        if (order.getItems() != null) {
+            for (OrderItem item : order.getItems()) {
+                releaseInventory(item);
+            }
         }
 
         order.setStatus(OrderStatus.CANCELLED);
