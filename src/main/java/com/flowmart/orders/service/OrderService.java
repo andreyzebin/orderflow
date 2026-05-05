@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import com.flowmart.orders.service.WarehouseService;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final PricingService pricingService;
+    private final WarehouseService warehouseService;
 
     @Transactional
     public Order createOrder(Customer customer, List<OrderItem> items) {
@@ -41,7 +43,6 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    @Transactional
     public Order cancelOrder(Long orderId) {
         Order order = findById(orderId);
         if (order.getStatus() == OrderStatus.SHIPPED
@@ -50,7 +51,7 @@ public class OrderService {
         }
 
         for (OrderItem item : order.getItems()) {
-            releaseInventory(item);
+            warehouseService.release(item.getId(), item.getQuantity());
         }
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -62,7 +63,4 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + orderId));
     }
 
-    private void releaseInventory(OrderItem item) {
-        // Integration point with inventory-service (async event in production)
-    }
 }
