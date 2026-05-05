@@ -14,10 +14,11 @@ import java.util.List;
 
 /**
  * Application-level orchestration of an Order's lifecycle: create →
- * confirm → cancel. Persistence is delegated to {@link OrderRepository},
- * monetary maths to {@link PricingService}. Methods are transactional
- * so that the status change and any side effects (inventory release,
- * total recalculation) commit atomically with the save.
+ * confirm → cancel. Persistence is delegated to {@link OrderRepository}
+ * and pricing maths to {@link PricingService}. The mutation methods
+ * (createOrder, confirmOrder, cancelOrder) run inside a JPA transaction
+ * via Spring's {@code @Transactional}; the lookup helper {@link #findById}
+ * is read-only and does not open a transaction.
  */
 @Service
 @RequiredArgsConstructor
@@ -62,10 +63,12 @@ public class OrderService {
     }
 
     /**
-     * Cancel an order and release inventory for each of its items.
-     * Permitted from any state except SHIPPED/DELIVERED — once goods
-     * are out the door, cancellation is the warehouse's problem, not
-     * this service's.
+     * Cancel an order and notify {@link #releaseInventory} for each of
+     * its items. Permitted from any state except SHIPPED and DELIVERED —
+     * once goods are out the door, cancellation is the warehouse's
+     * concern, not this service's. The {@code releaseInventory} hook is
+     * a stub that an inventory-service integration is expected to fill
+     * in (see {@code OrderService.releaseInventory}).
      */
     @Transactional
     public Order cancelOrder(Long orderId) {
