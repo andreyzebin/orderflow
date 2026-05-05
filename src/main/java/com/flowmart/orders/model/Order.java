@@ -57,4 +57,21 @@ public class Order {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    /**
+     * Defensive initialisation for entities loaded outside the JPA managed
+     * path (legacy importer, raw JDBC, native queries that map columns by
+     * hand). Hibernate normally populates @OneToMany as an empty list, but
+     * the legacy import script bypasses normal construction and persists
+     * rows with items=null. PostLoad rebuilds the collection so consumers
+     * can iterate without a guard. PrePersist closes the same gap on the
+     * write path before any future legacy importer commits a null row.
+     */
+    @PostLoad
+    @PrePersist
+    public void ensureItemsCollection() {
+        if (this.items == null) {
+            this.items = new ArrayList<>();
+        }
+    }
 }

@@ -49,10 +49,10 @@ public class OrderService {
             throw new IllegalStateException("Cannot cancel order in status: " + order.getStatus());
         }
 
-        if (order.getItems() != null) {
-            for (OrderItem item : order.getItems()) {
-                releaseInventory(item);
-            }
+        // After ORD-287 step1, Order.ensureItemsCollection() guarantees
+        // items is never null on load — no defensive guard needed here.
+        for (OrderItem item : order.getItems()) {
+            releaseInventory(item);
         }
 
         order.setStatus(OrderStatus.CANCELLED);
